@@ -36,7 +36,7 @@ Set-ExecutionPolicy unrestricted
 
 ##           Get credentials and pass them into a variable
 ##           The file for the password MUST be made on the same server that this is run from
-$password = get-content C:\Automation\<filename>.txt | convertto-securestring
+$password = get-content <automationservicePasswordhashfilelocation>.txt | convertto-securestring
 $credentials = new-object -typename System.Management.Automation.PSCredential -argumentlist "<AutomationServiceAccount>",$password
 $UserCredential = $credentials
 
