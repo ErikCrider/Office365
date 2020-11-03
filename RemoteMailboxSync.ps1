@@ -42,7 +42,7 @@ $when = ((Get-Date).AddDays(-7)).Date
 
 ##		Get credentials and pass them into a variable
 ##		The file for the password MUST be made on the same server that this is run from
-$password = get-content C:\Automation\RemoteMailbox\ExchRptSvc.txt | convertto-securestring
+$password = get-content <automationservicePasswordhashfilelocation>txt | convertto-securestring
 
 ##		Log into O365 and then On Premise. MUST BE IN THIS ORDER. If not, the get-mailbox command will direct towards the on premise server instead of O365		
 $credentials = new-object -typename System.Management.Automation.PSCredential -argumentlist "<ExchangeReportServiceAccount>",$password
