@@ -32,14 +32,15 @@ $date = (get-date -uformat "%m-%d-%Y-%R" | ForEach-Object { $_ -replace ":", "."
 $UserInboxRules = @()
 $UserDelegates = @()
 $mbx = @()
-foreach ($User in $allUsers){
-$MBX = $User
 
 ## Get all MSOL Users where UserPrincipalName -notlike "*#EXT#*
 $AllUsers = Get-MsolUser -All -EnabledFilter EnabledOnly |sort userprincipalname | select ObjectID, UserPrincipalName, FirstName, LastName, StrongAuthenticationRequirements, StsRefreshTokensValidFrom, StrongPasswordRequired, LastPasswordChangeTimestamp | Where-Object {($_.UserPrincipalName -notlike "*#EXT#*")}
 
+
 ## Get all inbox rules where the following attributes are not $Null: ForwardTo, ForwardAsAttachmentTo, RedirectsTo
-## Copy data to new PSObject to capture the mailbox the inboxrul belongs to
+## Copy data to new PSObject to capture the mailbox the inboxrule belongs to
+foreach ($User in $allUsers){
+$MBX = $User
 Foreach ($m in $MBX)
 {
     Write-Host "Checking inbox rules for user: " $M.UserPrincipalName;
