@@ -53,8 +53,7 @@ Write-Progress -Activity "Getting Rules And Delegates" -Status "Mailbox $($Curre
 ## Get all mailboxes with Delegated access
 Write-Host "Getting all mailbox permissions"
 $AllMBXPerms = Get-MailboxPermission -ResultSize Unlimited -Identity *
-$UserDelegates = $AllMBXPerms | Where-Object {($_.IsInherited -ne "True") -and ($_.User -notlike "*SELF*")} | select-object RunspaceId,AccessRights,Deny,InheritanceType,User,Identity,IsInherited,IsValid,ObjectState
-
+$UserDelegates = $AllMBXPerms | Where-Object {($_.IsInherited -ne "True") -and ($_.User -notlike "NT AUTHORITY\SELF") -and ($_.User -notlike "NT AUTHORITY\SYSTEM")} | select-object RunspaceId,AccessRights,Deny,InheritanceType,User,Identity,IsInherited,IsValid,ObjectState
 
 ## Get all mailboxes where the following attribute is not $Null: ForwardingSMTPAddress
 Foreach ($Mbx in $allMBX){
