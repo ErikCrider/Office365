@@ -47,11 +47,11 @@ $AllMBX = get-mailbox -resultsize unlimited
 Foreach ($user in $AllMBX){
 $UserInboxRules += Get-InboxRule -Mailbox $User.userprincipalname | Select MailboxOwnerId, Name, Description, Enabled, Priority, ForwardTo, ForwardAsAttachmentTo, RedirectTo, DeleteMessage | Where-Object {($_.ForwardTo -ne $null) -or ($_.ForwardAsAttachmentTo -ne $null) -or ($_.RedirectsTo -ne $null)}
 [int]$CurrentItem = [array]::indexof($AllMBX,$User)
-Write-Progress -Activity "Getting Rules And Delegates" -Status "Mailbox $($CurrentItem) of $($ALLMBX.Count - 1) - $([math]::round((($CurrentItem + 1)/$AllMBX.Count),2) * 100)%  - Currently checking - $($User.Name)" -PercentComplete $([float](($CurrentItem + 1)/$AllMBX.Count) * 100)
+Write-Progress -Activity "Getting Inbox Rules" -Status "Mailbox $($CurrentItem) of $($ALLMBX.Count - 1) - $([math]::round((($CurrentItem + 1)/$AllMBX.Count),2) * 100)%  - Currently checking - $($User.Name)" -PercentComplete $([float](($CurrentItem + 1)/$AllMBX.Count) * 100)
 }
 
 ## Get all mailboxes with Delegated access
-Write-Host "Getting all mailbox permissions"
+Write-Host "Getting all mailbox permissions. This may take a while."
 $AllMBXPerms = Get-MailboxPermission -ResultSize Unlimited -Identity *
 $UserDelegates = $AllMBXPerms | Where-Object {($_.IsInherited -ne "True") -and ($_.User -notlike "NT AUTHORITY\SELF") -and ($_.User -notlike "NT AUTHORITY\SYSTEM")} | select-object RunspaceId,AccessRights,Deny,InheritanceType,User,Identity,IsInherited,IsValid,ObjectState
 
