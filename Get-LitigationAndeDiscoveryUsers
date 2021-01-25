@@ -1,0 +1,44 @@
+<#
+A simple report to get litigation hold users as well as users from Advanced eDiscovery
+Reports are placed in a directory and emailed out
+
+Author: Erik Crider
+
+To make work inyour environment:
+Line 16: Update with correct UNC filepath
+Line 20: Update with email recipient(s) and fqdn or IP address of SMTP relay
+Line 26: Update with correct UNC filepath
+Line 44: Update with email recipient(s) and fqdn or IP address of SMTP relay
+
+
+#>
+
+Connect-eoshell 
+$date = (get-date -format MM-dd-yyyy) 
+$filename = "\\Server\reports\Litigation Reports\Litigation Hold Report Off-Site-" + $date + ".txt" 
+get-mailbox -ResultSize unlimited -filter {litigationholdenabled -eq "true"} |sort LitigationHoldDate | ft name, LitigationHoldDate > $filename 
+Send-MailMessage -To <emailaddress> -From LitigationHoldReport@contoso.com -Attachments $filename -Subject "Litigation Hold Report" -SmtpServer <FQDN of SMTPRelayServer> 
+
+
+
+Connect-ippssession 
+$date = (get-date -format MM-dd-yyyy)  
+$Reportpath = "\\Server\reports\Litigation Reports\eDiscovery-" + $date + ".txt"
+
+$ed = Get-CaseHoldRule  
+
+$Output = @() 
+$Query = foreach ($e in $ed) { 
+$Case = Get-CaseHoldPolicy -Identity $e.name | select -expandproperty exchangelocation 
+Foreach ($c in $case) { 
+$username = $c 
+$CaseName = $e.name 
+$DataObject = new-Object PSObject 
+Add-Member -inputObject $dataObject -memberType NoteProperty -name "UserName" -value $Username 
+Add-Member -inputObject $dataObject -memberType NoteProperty -name "CaseName" -value $CaseName 
+$Output += $Dataobject 
+} 
+} 
+
+$output | Out-File $Reportpath  
+Send-MailMessage -To <emailaddress> -From LitigationHoldReport@contoso.com -Attachments $Reportpath -Subject "eDiscovery Hold Report" -SmtpServer <FQDN of SMTPRelayServer> 
