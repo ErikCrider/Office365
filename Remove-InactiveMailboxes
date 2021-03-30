@@ -1,0 +1,43 @@
+<#
+	Remove Inactive Mailboxes
+This script will remove inactive mailboxes from Office 365 that are being held onto by an Exchange retention policy
+The retention compliance policy holds on to mailboxes after the user is removed. This script specifically 
+exempts these mailboxes from that organization hold with this switch -ExcludeFromOrgHolds "<38 character GUID starting with MBX>"
+To find hold GUID: Get-OrganizationConfig |fl inplace*
+Compare to Get-RetentionCompliancePolicy | fl name,*id*
+Update line 42 with correct GUID
+The script then removes delay holds from the mailboxes so that they are removed at the next opportunity by Microsoft's processes
+
+What this script does not do is deal with ComplianceTag holds. These are retention tags set in https://protection.office.com/retentionlabels
+Any existing tags are capable of applying a longer retention on a mailbox item, and thus the mailbox. 
+These should be found using a Content Search and the retention tag changed or removed from there.
+
+
+Prerequisites:
+Must have Exchange Online admin access
+Must have powershell module: ExchangeOnlineShell
+	Find-module ExchangeOnlineShell | install-module
+
+Author: Erik Crider
+Date: 03/11/2021
+
+#>
+
+##  Connect to Office 365
+Connect-ExchangeOnlineShell
+
+
+##  Declare script variables. Gather inactive mailboxes without compliance tag hold, then grab just the 35 days and older users
+$allInactiveMBX = get-mailbox -InactiveMailboxOnly -ResultSize unlimited | where {$_.ComplianceTagHoldApplied -ne "true"}
+write-host $allInactiveMBX.count "inactive mailboxes found"
+$OldUserObjects = $allInactiveMBX | where {$_.WhenSoftDeleted -lt ((Get-Date).AddDays(-35)).Date}
+write-host $OldUserObjects.count "mailboxes older than 60 days old"
+$Users = $OldUserObjects | select -ExpandProperty identity
+
+##  Loop through each mauilbox and removes holds. This will likely output 1 or more lines saying applied but not modified
+Foreach ($u in $Users){
+write-host "Processing user" $u
+set-mailbox -Identity $u -InactiveMailbox -RemoveDelayHoldApplied:$true -Confirm:$false -Force
+set-mailbox -Identity $u -InactiveMailbox -RemoveDelayReleaseHoldApplied:$true -Confirm:$false -Force
+set-mailbox -Identity $u -InactiveMailbox -ExcludeFromOrgHolds "<GUID>" -Confirm:$false -Force
+}
