@@ -31,7 +31,7 @@ Connect-ExchangeOnlineShell
 $allInactiveMBX = get-mailbox -InactiveMailboxOnly -ResultSize unlimited | where {$_.ComplianceTagHoldApplied -ne "true"}
 write-host $allInactiveMBX.count "inactive mailboxes found"
 $OldUserObjects = $allInactiveMBX | where {$_.WhenSoftDeleted -lt ((Get-Date).AddDays(-35)).Date}
-write-host $OldUserObjects.count "mailboxes older than 60 days old"
+write-host $OldUserObjects.count "mailboxes older than 35 days old"
 $Users = $OldUserObjects | select -ExpandProperty identity
 
 ##  Loop through each mauilbox and removes holds. This will likely output 1 or more lines saying applied but not modified
